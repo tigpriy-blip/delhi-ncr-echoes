@@ -74,7 +74,7 @@ export function TreasuresGallery({
 
   return (
     <div>
-      <div className="sticky top-0 z-30 bg-[var(--paper)]/95 backdrop-blur border-b border-black/10 py-2 mb-4 -mx-4 px-4 flex gap-2">
+      <div className="sticky top-0 z-30 bg-[var(--paper)] border-b border-black/10 py-2 mb-4 -mx-4 px-4 flex gap-2 treasures-tabbar">
         <button
           onClick={() => jumpTo("a")}
           className={`px-3 py-1 rounded-full text-sm scrap-head transition ${active === "a" ? "bg-black/10" : "opacity-70 hover:opacity-100"}`}

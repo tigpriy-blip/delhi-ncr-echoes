@@ -90,10 +90,17 @@
   position: relative;
 }
 
-/* Treasure tiles — skip layout/paint when off-screen for huge galleries */
+/* Treasure tiles — only contain paint, not layout. content-visibility on
+   masonry columns causes scroll jumps when intrinsic-size differs from
+   the real image height, so we stick to cheap paint containment. */
 .treasure-tile {
-  content-visibility: auto;
-  contain-intrinsic-size: 280px 280px;
+  contain: paint;
+}
+
+.treasures-tabbar {
+  /* dedicated layer so the masonry grid behind doesn't repaint with it */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 [data-act="1"] .garland {
