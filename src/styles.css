@@ -78,6 +78,13 @@
   background-color: var(--paper);
   color: var(--paper-ink);
   font-family: var(--font-scrap-body);
+}
+
+/* Treasure tiles — skip layout/paint when off-screen for huge galleries */
+.treasure-tile {
+  content-visibility: auto;
+  contain-intrinsic-size: 280px 280px;
+}
   background-image:
     radial-gradient(circle at 10% 20%, var(--party-pink) 2.5px, transparent 3px),
     radial-gradient(circle at 80% 10%, var(--party-teal) 2px, transparent 2.5px),
