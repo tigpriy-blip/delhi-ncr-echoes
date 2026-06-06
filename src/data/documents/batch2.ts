@@ -370,7 +370,10 @@ All ten cases involve:
    professionally closed, with evidence
    of concurrent uterine access.
 
-5. The pregnancy surviving the incident.
+5. The fetus missing upon medical examination.
+   The uterus is empty. No live birth has
+   occurred. The pregnancy has been terminated
+   through surgical removal during the incident.
 
 6. A medical examination noting the
    exceptional quality of the suturing
@@ -438,6 +441,33 @@ they were unconscious from an early point.
 
 This is not random. This is also consistent
 across a decade.
+
+---
+
+ADDITIONAL OBSERVATIONS
+
+In the three most detailed medical reports
+(Kapoor 2011, Mehrotra 2014, Anand 2019),
+the examining physicians note the presence
+of dried blood on the victim's face, neck,
+and upper chest that does not match the
+victim's blood type. All three reports
+also record the victim repeating variations
+of the same phrase while in a dissociative
+state:
+
+"He ate my baby while it was still moving."
+
+These statements appear in the original
+medical notes but were not pursued in any
+of the subsequent police investigations.
+The FIRs classify the cases as trauma-induced
+delusion or misreported surgical procedures.
+
+I am flagging this because the consistency
+of the statement across three separate
+incidents, ten years apart, is statistically
+significant.
 
 ---
 
