@@ -309,7 +309,6 @@ person the entire structure was built for.
 
 I have been looking for that subject since
 the moment I understood what I was missing.
-the moment I understood what I was missing.
 Everything else has been practice.
 
 When the final file resolves, the reader
