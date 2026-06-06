@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { startDrone, stopDrone } from "@/lib/audio";
+import { startAct2Ambience, stopAct2Ambience, stinger, swell } from "@/lib/audio";
 import { ls } from "@/lib/storage";
 import { LS } from "@/lib/constants";
 import { LoginSequence } from "./LoginSequence";
@@ -37,15 +37,26 @@ export function Archive() {
   });
 
   useEffect(() => {
-    startDrone();
+    startAct2Ambience(1);
     // restore unlock state
     setState({
       batchesUnlocked: Math.max(1, ls.getNum(LS.batchesUnlocked, 1)),
       field19Unlocked: ls.getBool(LS.field19Unlocked),
       ongoingUnlocked: ls.getBool(LS.ongoingUnlocked),
     });
-    return () => stopDrone();
+    return () => stopAct2Ambience();
   }, []);
+
+  // Ramp ambience as more batches unlock
+  useEffect(() => {
+    startAct2Ambience(state.batchesUnlocked);
+  }, [state.batchesUnlocked]);
+
+  // Stinger when the observer permanently joins
+  useEffect(() => {
+    if (observerPresent) stinger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [observerPresent]);
 
   const unlockBatch = (b: 2 | 3 | 4) => {
     setState((s) => {
@@ -95,6 +106,7 @@ export function Archive() {
       {view.kind === "puzzle" && view.n === 1 && (
         <Puzzle1Redaction
           onComplete={() => {
+            stinger();
             unlockBatch(2);
             setView({ kind: "dir" });
           }}
@@ -104,6 +116,7 @@ export function Archive() {
       {view.kind === "puzzle" && view.n === 2 && (
         <Puzzle2Transmission
           onComplete={() => {
+            stinger();
             unlockBatch(3);
             setView({ kind: "dir" });
           }}
@@ -113,6 +126,7 @@ export function Archive() {
       {view.kind === "puzzle" && view.n === 3 && (
         <Puzzle3CaseBoard
           onComplete={() => {
+            stinger();
             unlockBatch(4);
             setView({ kind: "dir" });
           }}
@@ -122,6 +136,7 @@ export function Archive() {
       {view.kind === "puzzle" && view.n === 4 && (
         <Puzzle4Timeline
           onComplete={() => {
+            swell(1600);
             unlockField19();
             setView({ kind: "dir" });
           }}
@@ -132,6 +147,7 @@ export function Archive() {
       {view.kind === "master" && (
         <MasterPuzzle
           onComplete={() => {
+            swell(2000);
             unlockOngoing();
             setView({ kind: "dir" });
           }}
