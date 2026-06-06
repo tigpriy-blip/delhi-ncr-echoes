@@ -307,8 +307,6 @@ trigger. The person who opens that sticker
 and follows the thread to the end is the
 person the entire structure was built for.
 
-I lost one subject in 1961.
-
 I have been looking for that subject since
 the moment I understood what I was missing.
 Everything else has been practice.
