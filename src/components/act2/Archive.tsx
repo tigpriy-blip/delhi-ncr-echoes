@@ -52,12 +52,6 @@ export function Archive() {
     startAct2Ambience(state.batchesUnlocked);
   }, [state.batchesUnlocked]);
 
-  // Stinger when the observer permanently joins
-  useEffect(() => {
-    if (observerPresent) stinger();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [observerPresent]);
-
   const unlockBatch = (b: 2 | 3 | 4) => {
     setState((s) => {
       const next = { ...s, batchesUnlocked: Math.max(s.batchesUnlocked, b) };
@@ -83,6 +77,11 @@ export function Archive() {
       (view.kind === "puzzle" && view.n === 4) ||
       view.kind === "master" ||
       view.kind === "ending");
+
+  // Stinger when the observer permanently joins
+  useEffect(() => {
+    if (observerPresent) stinger();
+  }, [observerPresent]);
 
   return (
     <div data-act="2" className="min-h-screen px-4 py-6 md:px-10 md:py-10">
