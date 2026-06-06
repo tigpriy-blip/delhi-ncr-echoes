@@ -89,6 +89,13 @@
   min-height: 100vh;
   position: relative;
 }
+
+/* Treasure tiles — skip layout/paint when off-screen for huge galleries */
+.treasure-tile {
+  content-visibility: auto;
+  contain-intrinsic-size: 280px 280px;
+}
+
 [data-act="1"] .garland {
   height: 26px;
   background:

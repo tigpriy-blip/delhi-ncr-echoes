@@ -1,67 +1,60 @@
-# Plan — Act 1: replace Stickers with "my treasures" gallery
+## 1. Scary audio in Act 2
 
-## Goal
+Today Act 2 only plays the synthesized low drone (`startDrone` in `src/lib/audio.ts`). I'll layer in extra dread without adding any asset files — all synthesized via WebAudio so it respects the existing mute toggle and stays zero-bytes.
 
-Remove the StickerBox from Act 1 and replace it with a new **My Treasures** panel — a CSS masonry layout split into **two named sub-sections** the user will fill from a local folder. Target capacity: 175+ images, performant on first load.
+Add to `src/lib/audio.ts`:
+- **Heartbeat** — slow ~50 BPM low thump (sine ~55 Hz + filtered noise), starts when `Archive` mounts, BPM ramps up subtly as `batchesUnlocked` increases.
+- **Random whispers/scrapes** — every 8–25s schedule a short filtered-noise gust or detuned high-pitch shimmer at low volume. Adds "something's wrong" texture.
+- **Stinger SFX** — sharp dissonant cluster (two detuned oscillators, fast decay) for: puzzle solved (`stamp` replacement variant), document open, observer-joined moment in `LiveViewers`.
+- **Reverse-cymbal swell** before `MasterPuzzle` and `Ending` — rising filtered noise over ~2s.
 
-## New component: `src/components/act1/TreasuresBox.tsx`
+Wiring:
+- `Archive.tsx`: replace `startDrone()` with new `startAct2Ambience({ intensity })` that bundles drone + heartbeat + whisper scheduler; pass intensity from `state.batchesUnlocked`. Call `stopAct2Ambience()` on unmount.
+- Add a stinger call in the puzzle `onComplete` handlers and in `DocumentViewer` mount.
+- All new sounds gated by existing `muted` flag — the 🔊/🔇 toggle keeps working.
 
-- Header: `my treasures 💝` (scrap-head, same visual language as the other boxes).
-- Two sub-sections rendered in order with a small heading between them. Default heading text: **"section one"** and **"section two"** — easily editable strings at the top of the file. (User can rename later; we don't need exact names now.)
-- Each sub-section renders its own CSS-columns masonry (`columns-2 md:columns-3 lg:columns-4`, `gap-3`, `break-inside-avoid`).
-- Each tile = polaroid-styled wrapper with the image. Random tilt classes (`tilt-1/2/3`) for the scrapbook feel.
-- Click a tile → lightbox overlay (full-screen, click-to-close, ESC to close, arrow keys to navigate within the current section). Lightweight — no library, ~40 lines.
-- **Performance:** native `loading="lazy"` + `decoding="async"` on every `<img>`. Fixed aspect ratio wrapper to prevent layout shift. With 175+ images this is enough; no virtualization needed for a scroll page.
+No new dependencies, no audio files, no UI changes.
 
-## Image loading strategy (folder drop-in)
+## 2. Treasures section — scale to 175+ images
 
-Use Vite's `import.meta.glob` with `eager: true, as: 'url'` so the user just drops files in and they auto-appear, no manifest editing:
+Problem: rendering 175+ `<img>` tags inline on the Act 1 page will tank first paint and overwhelm the bento layout, even with `loading="lazy"`.
 
-```ts
-// src/data/treasures.ts
-const sectionA = import.meta.glob(
-  "/src/assets/treasures/section-a/*.{jpg,jpeg,png,webp,avif,gif}",
-  { eager: true, query: "?url", import: "default" }
-) as Record<string, string>;
-// same for section-b
-export const treasures = {
-  sectionA: Object.values(sectionA).sort(),
-  sectionB: Object.values(sectionB).sort(),
-};
-```
+Solution: **move the full gallery to its own route** and keep only a small teaser on Act 1.
 
-Two folders to create (empty, with a `.gitkeep` and a short `README.md` explaining "drop images here"):
-- `src/assets/treasures/section-a/`
-- `src/assets/treasures/section-b/`
+### New route: `src/routes/treasures.tsx`
 
-Note for the user: 175+ images in `src/assets/` will bloat the repo. After the structure ships, recommend running the `migrate-to-assets` flow (or just upload via chat) to move them to the Lovable CDN. Not part of this plan — mentioned in the closing message only.
+- Full-page gallery with the two sub-sections.
+- Reuses the masonry + lightbox from current `TreasuresBox`, extracted into a shared `<TreasuresGallery />` component in `src/components/treasures/TreasuresGallery.tsx`.
+- Performance for 175+ images:
+  - Native `loading="lazy"` + `decoding="async"` + explicit `width/height` (read from image natural size via a tiny wrapper, or fixed aspect-ratio container) to prevent CLS.
+  - **`content-visibility: auto`** on each tile (CSS one-liner) so off-screen tiles skip layout/paint entirely — biggest win for long galleries.
+  - Lightbox preloads only the next/prev image, not all of them.
+  - Sticky sub-section tab bar (`section one` / `section two`) so the user can jump without scrolling through hundreds of tiles.
+- Back button (`<Link to="/">`) returns to Act 1; Act 1 stage state is preserved (it lives in sessionStorage already).
 
-## Wiring changes
+### Act 1 teaser: rewrite `TreasuresBox.tsx`
 
-`src/components/act1/BirthdaySite.tsx`:
-- Replace `<StickerBox />` in the `bento-top` section with `<TreasuresBox />`.
-- Remove the `"stickers"` tour stop. New tour order: `snapshots → mystery → done`. Initial `tourStop` becomes `"snapshots"`.
-- Update `onFirstSearch` to advance to `"mystery"` (already does — no change needed there; the chain just starts one step later).
+- Show only the **first 6 thumbnails** (3 per section) as a preview collage.
+- Big "see all my treasures →" `<Link to="/treasures">` button.
+- Shows total count: e.g. `"178 treasures inside ♡"`.
+- No lightbox here — clicking a thumb also navigates to `/treasures`.
 
-`src/components/act1/TourGuide.tsx`:
-- Remove the `"stickers"` case from the `TourStop` union and the copy map. Keep `snapshots` and `mystery` only.
+### Asset pipeline note (mentioned to user, not built now)
 
-Delete:
-- `src/components/act1/StickerBox.tsx`
-- `src/data/stickers.ts`
+175 images in `src/assets/` will balloon the repo and slow `bun run build`. After the user drops them in, recommend the `migrate-to-assets` flow to push them to the Lovable CDN — the `import.meta.glob` will keep working through the same path because the `.asset.json` pointer files live in the same folder.
 
-Search for any other references to `StickerBox` / `stickers` / `tourStop === "stickers"` and clean them up (the bento CSS class `bento-top` stays — it's just a layout slot).
+## Files touched
+
+- `src/lib/audio.ts` — add ambience/stinger functions (additive, no breaking changes).
+- `src/components/act2/Archive.tsx` — swap drone calls for ambience, pass intensity.
+- `src/components/act2/DocumentViewer.tsx`, `LiveViewers.tsx`, `puzzles/*` — small stinger hooks.
+- `src/components/treasures/TreasuresGallery.tsx` — new, extracted from current TreasuresBox.
+- `src/components/act1/TreasuresBox.tsx` — rewritten as a teaser.
+- `src/routes/treasures.tsx` — new full gallery route.
+- `src/styles.css` — add `.treasure-tile { content-visibility: auto; contain-intrinsic-size: ... }`.
 
 ## Out of scope
 
-- Act 2, puzzles, audio, backend.
-- Renaming Snapshots or Mystery Box (user only asked to replace stickers).
-- Image optimization pipeline (handled later via assets migration).
-- The "special sticker" inside the Mystery Box (`onSticker11`) is unrelated to StickerBox and stays — it's the Act 1 → Act 2 trigger.
-
-## Verification
-
-1. Preview loads, Act 1 shows three panels: Mystery Box, **My Treasures** (two empty sub-sections with friendly placeholder text "drop images in `src/assets/treasures/section-a/`"), Snapshots.
-2. Tour skips stickers and starts at Snapshots.
-3. Drop a couple of test images into each folder → they appear in masonry → click opens lightbox → arrows navigate → ESC closes.
-4. No console errors. Build passes. No dangling `StickerBox` imports.
+- Pagination/infinite scroll (not needed with `content-visibility: auto` for 175 images).
+- Image format conversion / CDN migration (separate flow, user-triggered).
+- Changing existing Act 1 → Act 2 transition or puzzle logic.
